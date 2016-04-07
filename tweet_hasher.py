@@ -1,8 +1,9 @@
 import random
 import re
 import string
-    
-    
+import twitter_data_types
+import math
+
 class dateTrimmer(object):
     def trim(date):
         return 0
@@ -10,6 +11,14 @@ class dateTrimmer(object):
 class lazyDateTrimmer(dateTrimmer):
     def trim(date):
         return date;
+
+class number_hasher(object):
+    def hash(self,number):
+        return 0;
+
+class log_hasher(number_hasher):
+    def hash(self,number):
+        return round(math.pow(math.e,round(math.log(number+1))))-1
 
 class tweet_hasher(object):
     def __init__(self,forceWordSize = False,dateTrimmer = lazyDateTrimmer, matchCases = False):
@@ -87,6 +96,18 @@ class tweet_hasher(object):
         print("Word Conversion Table")
         print(self.wordConversion)
 
+class user_hasher(object):
+    def __init__(self, the_tweet_hasher, number_hasher = log_hasher()):
+        self.userConversion = the_tweet_hasher.userConversion
+        self.numHasher = number_hasher
+    def convert(self,the_user):
+        new_user = twitter_data_types.user()
+        new_user.user_id = self.userConversion[the_user.user_id]
+        new_user.followers = self.numHasher.hash(the_user.followers)
+        new_user.friends = self.numHasher.hash(the_user.friends)
+        new_user.tweets = self.numHasher.hash(the_user.tweets)
+        return new_user
+
 t = tweet_hasher(forceWordSize = True, matchCases = True)
 
 t.train(12,"this is a test!",0)
@@ -96,3 +117,7 @@ t.train(23,"Something else? ;)",23)
 print(t.convert(12,"this is a test!",0))
 print(t.convert(12,"also a #test",12))
 print(t.convert(23,"Something else? ;)",23))
+
+
+u = twitter_data_types.user("bob",25,32,0,12)
+uh = user_hasher(t)

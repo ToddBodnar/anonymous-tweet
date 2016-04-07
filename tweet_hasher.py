@@ -55,15 +55,15 @@ class tweet_hasher(object):
                 result = result + newWord[itr]
         return result
     
-    def train(self,user,text,date):
-        if(user not in self.userConversion):
+    def train(self,tweet):
+        if(tweet.poster_id not in self.userConversion):
             newUserId = random.randint(1, 10000000000)
             while newUserId in self.userSet:
                 newUserId = random.randint(1, 10000000000)
-            self.userConversion[user] = newUserId
+            self.userConversion[tweet.poster_id] = newUserId
             self.userSet.add(newUserId)
         
-        for keyword in re.split("[^a-zA-Z]",text):
+        for keyword in re.split("[^a-zA-Z]",tweet.text):
             if(keyword == ''):
                 continue
             if(keyword.lower() not in self.wordConversion):
@@ -73,19 +73,19 @@ class tweet_hasher(object):
                 self.wordConversion[keyword.lower()] = newString
                 self.wordSet.add(newString)
     
-    def convert(self,user,text,date):
-        newUser = self.userConversion[user]
-        newDate = self.dateTrimmer.trim(date)
+    def convert(self,tweet):
+        newUser = self.userConversion[tweet.poster_id]
+        newDate = self.dateTrimmer.trim(tweet.date)
         newText = ""
-        for keyword in re.split("([^a-zA-Z])",text):
+        for keyword in re.split("([^a-zA-Z])",tweet.text):
             if(keyword == ''):
                 continue
             if keyword.lower() in self.wordConversion:
                 newText = newText + self.__copyCase(keyword,self.wordConversion[keyword.lower()])
             else:
                 newText = newText + keyword
-        return {"user":newUser,"text":newText, "date":date}
-        
+        return twitter_data_types.tweet(newText,newUser,newDate, tweet.tweet_id,tweet.retweets)
+    
     def print(self):
         print("New User Set")
         print(self.userSet)
